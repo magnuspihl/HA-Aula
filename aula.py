@@ -34,10 +34,10 @@ while success == False and counter < 10:
     try:
         # Parse response using BeautifulSoup
         soup = BeautifulSoup(response.text, "html.parser")
-        print('Got soup')
+        # print('Got soup')
         # Get destination of form element (assumes only one)
         url = soup.form['action']
-        print('Found action URL', url)
+        # print('Found action URL', url)
          
         # If form has a destination, inputs are collected and names and values
         # for posting to form destination are saved to a dictionary called data
@@ -58,11 +58,11 @@ while success == False and counter < 10:
                         # Save username if input is a username field
                         if input['name'] == 'username':
                             data[input['name']] = user['username']
-                            print('Filled username')
+                            # print('Filled username')
                         # Save password if input is a password field
                         elif input['name'] == 'password':
                             data[input['name']] = user['password']
-                            print('Filled password')
+                            # print('Filled password')
                         # For employees the login procedure has an additional field to select a role
                         # If an employee needs to login in a parent role, this value needs to be changed
                         elif input['name'] == 'selected-aktoer':
@@ -92,29 +92,26 @@ while success == False and counter < 10:
  
 # Login succeeded without an HTTP error code and API requests can begin 
 if success == True and response.status_code == 200:
-    print("Login lykkedes")
-     
+    # print("Login succeeded")
     # All API requests go to the below url
     # Each request has a number of parameters, of which method is always included
     # Data is returned in JSON
-    url = 'https://www.aula.dk/api/v11/'
+    url = 'https://www.aula.dk/api/v13/'
  
     ### First API request. This request must be run to generate correct correct cookies for subsequent requests. ###
     params = {
         'method': 'profiles.getProfilesByLogin'
-        }
-    # Perform request, convert to json and print on screen
+    }
     response_profile = session.get(url, params=params).json()
-    print(json.dumps(response_profile, indent=4))
+    # print(json.dumps(response_profile, indent=4))
      
     ### Second API request. This request must be run to generate correct correct cookies for subsequent requests. ###
     params = {
         'method': 'profiles.getProfileContext',
         'portalrole': 'guardian',   # 'guardian' for parents (or other guardians), 'employee' for employees
     }
-    # Perform request, convert to json and print on screen
     response_profile_context = session.get(url, params=params).json()
-    print(json.dumps(response_profile_context, indent=4))
+    # print(json.dumps(response_profile_context, indent=4))
  
     # Loop to get institutions and children associated with profile and save
     # them to lists
@@ -126,45 +123,21 @@ if success == True and response.status_code == 200:
         institution_profiles.append(institution['institutionProfileId'])
         for child in institution['children']:
             children.append(child['id'])
-     
-    children_and_institution_profiles = institution_profiles + children
- 
-    ### Third example API request, uses data collected from second request ###
-    params = {
-        'method': 'notifications.getNotificationsForActiveProfile',
-        'activeChildrenIds[]': children,
-        'activeInstitutionCodes[]': institutions
-    }
-     
-    # Perform request, convert to json and print on screen
-    notifications_response = session.get(url, params=params).json()
-    print(json.dumps(notifications_response, indent=4))
-     
-    ### Fourth example API request, only succeeds when the third has been run before ###
-    params = {
-        'method': 'messaging.getThreads',
-        'sortOn': 'date',
-        'orderDirection': 'desc',
-        'page': '0'
-    }
-     
-    # Perform request, convert to json and print on screen
-    response_threads = session.get(url, params=params).json()
-    print(json.dumps(response_threads, indent=4))
-     
-    ### Fifth example. getAllPosts uses a combination of children and instituion profiles. ###
-    params = {
-        'method': 'posts.getAllPosts',
-        'parent': 'profile',
-        'index': "0",
-        'institutionProfileIds[]': children_and_institution_profiles,
-        'limit': '10'
-    }
- 
-    # Perform request, convert to json and print on screen
-    response_threads = session.get(url, params=params).json()
-    print(json.dumps(response_threads, indent=4))
+    
+    # Get daily overview
+    for child in children:
+        params = {
+            'method': 'presence.getDailyOverview',
+            'childIds[]': '3437552'
+        }
+        response_daily_overview = session.get(url, params=params).json()
+        overview = response_daily_overview['data'][0]
+        print('Daily Overview (' + overview['institutionProfile']['name'] + '):')
+        print('Arrived: ' + overview['checkInTime'])
+        print('Leaving: ' + (overview['checkOutTime'] or '(Unknown)'))
+        print('Status: ' + str(overview['status'])) #3 when "Til stede"
+        print('Activity: ' + str(overview['activityType'])) #0 when "Til stede"
  
 # Login failed for some unknown reason
 else:
-    print("Noget gik galt med login")
+    print("Login failed")
