@@ -1,0 +1,11 @@
+{
+    "domain": "aula",
+    "name": "Aula",
+    "version": "0.1.0",
+    "documentation": "",
+    "dependencies": [],
+    "codeowners": ["MagnusPihl"],
+    "config_flow": true,
+    "requirements": ["bs4"],
+    "iot_class": "cloud_polling"
+  }

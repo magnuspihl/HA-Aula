@@ -1,0 +1,26 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Add Aula",
+                "data": {
+                    "username": "User name",
+                    "password": "Password",
+                    "zone": "Zone"
+                }
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "user": {
+                "title": "Edit Aula",
+                "data": {
+                    "username": "User name",
+                    "password": "Password",
+                    "zone": "Zone"
+                }
+            }
+        }
+    }
+}
